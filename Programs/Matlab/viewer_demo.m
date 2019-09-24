@@ -34,7 +34,7 @@ clf
 ax = axes('units', 'pixels', 'Position', [0 0 1 1]);
 
 % Title
-ti = uicontrol('style', 'text', 'units','pixel', 'position', [0 0 1 1]);
+tl = uicontrol('style', 'text', 'units','pixel', 'position', [0 0 1 1]);
 
 % --- Controls
 
@@ -66,8 +66,7 @@ updateImage();
         st.Position = [35 10 w-45 20];
         sz.Position = [10 35 20 h-45];
         ax.Position = [75 75 w-100 h-150];
-        ti.Position = [100 h-75 200 20];
-        ti.String = 'ok';
+        tl.Position = [w/2-100 h-70 200 20];
         
     end
 
@@ -75,75 +74,26 @@ updateImage();
 
     function updateImage(varargin)
         
-        % --- Get tranlation and rotation values
+        % --- Get sliders values
         
         zi = round(get(sz, 'Value'));
         ti = round(get(st, 'Value'));
-                
-        % --- Move model
-        Img = Image.rotate(M.state(1).img, param.alpha, 'center', M.state(1).center);
-        Img = Image.translate(Img, param.tx, param.ty);
+                  
+        % --- Image
         
-        % --- Locate objects
-        findObject()
+        Img = double(Data.D(:,:,zi))-ti;
         
         % --- Display
-        updateDisplay();
         
-    end
-
-% === Object ==============================================================
-
-    function findObject()
-        
-        tic
-        
-        % Remove small objects
-        CC = bwconncomp(Img>=0.5);
-        [~, mi] = max(cellfun(@numel, CC.PixelIdxList));
-        Tmp = Img;
-        for j = setdiff(1:numel(CC.PixelIdxList), mi)
-            Tmp(CC.PixelIdxList{j}) = 0;
-        end
-        
-        % Define state and get contours
-        S = State(Tmp);
-        S.getContour();
-                        
-        % Get best match
-       [Ci, E, D2] = Cr.fiton(S.contour, ref);
-                   
-        % Update computation time
-        set(ptime, 'string', [ '[' num2str(param.tx) ...
-            ', ' num2str(param.ty) ...
-            ', ' num2str(param.alpha) ...
-            '] | Computation time: ' num2str(toc*1000, '%.02f') ' ms']);
-        
-    end
-
-% === Display =============================================================
-
-    function updateDisplay()
-        
-        figure(1)
         cla
                    
-        if gom>2
-            
-            imshow(cat(3,Img, zeros(size(Img)), zeros(size(Img))));
-            if ~isnumeric(Ci), Ci.plot('y-'); end
-                        
-            param
-            
-        else
-            
-            imshow(Img);
-            if ~isnumeric(Ci), Ci.plot('r.-'); end
-            
-            
-        end
+        imshow(Img);
         
-        axis xy tight
+        axis on xy tight        
+        caxis([0 100])
+        colorbar
+        
+        tl.String = ['z = ' num2str(zi) ' ; t = ' num2str(ti) ];
         
     end
 
