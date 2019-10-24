@@ -1,7 +1,7 @@
-function viewer_demo()
+function stack4d()
 
 % ----------------------------
-%       VIEWER DEMO
+%       4D STACK VIEWER
 % ----------------------------
 
 clc
