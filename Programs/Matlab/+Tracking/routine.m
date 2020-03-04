@@ -169,6 +169,16 @@ if savefile
     
 end
 
+% ---- Interpolation ------------------------------------------------------
+
+
+f = scatteredInterpolant(linspace(0, 512), linspace(0, 512), ...
+        Tr.traj(k).t, [Tr.traj(k).position(:,1); ...
+        Tr.traj(k).position(:,2); ...
+        Tr.traj(k).position(:,3)]);
+        
+
+
 % === Display =============================================================
 
 Tr.disp
