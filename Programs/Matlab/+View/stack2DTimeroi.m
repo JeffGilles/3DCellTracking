@@ -1,4 +1,4 @@
-function stack2DTime(varargin)
+function stack2DTimeroi(varargin)
 
 % ----------------------------
 %    STACK 2D + TIME VIEWER
@@ -6,21 +6,20 @@ function stack2DTime(varargin)
 
 % === Parameters ==========================================================
 
-clc
+%clc
 warning('off', 'images:imshow:magnificationMustBeFitForDockedFigure');
 
 p = inputParser;
 addRequired(p, 'Stack', @isnumeric);
 addRequired(p, 'grid', @isnumeric);
 addRequired(p, 'piv', @isnumeric);
-% addOptional(p, 'roi', @isnumeric);
+addOptional(p, 'roi', @isnumeric);
 
 parse(p, varargin{:});
 Stack = p.Results.Stack;
 grid = p.Results.grid;
 piv = p.Results.piv;
-% roi = p.Results.roi;
-
+roi = p.Results.roi;
 
 % Visualization
 % pointer = struct('ext',  5:20, 'color', [1 0 1]);
@@ -116,12 +115,12 @@ updateImage();
         hold on;
         
         quiver(grid(:,1), grid(:,2), piv(:,1,ti), piv(:,2,ti));
-        
-%         if roi ~= null
-%             roipoly(Img, roi(:, 1, ti), roi(:, 2, ti));
-%         end
+        plot(roi(:, 1, ti), roi(:, 2, ti), 'r.-', 'MarkerSize', 20);
+%         contour(roi(:, 1, ti), roi(:, 2, ti), ti);
         
         hold off;
+        
+        axis([1 size(Img,2) 1 size(Img,1)]);
         
     end
 
