@@ -11,15 +11,18 @@ warning('off', 'images:imshow:magnificationMustBeFitForDockedFigure');
 
 p = inputParser;
 addRequired(p, 'Stack', @isnumeric);
+addRequired(p, 'output', @ischar);
 addRequired(p, 'grid', @isnumeric);
 addRequired(p, 'piv', @isnumeric);
 addOptional(p, 'roi', @isnumeric);
+
 
 parse(p, varargin{:});
 Stack = p.Results.Stack;
 grid = p.Results.grid;
 piv = p.Results.piv;
 roi = p.Results.roi;
+output = p.Results.output;
 
 % Visualization
 % pointer = struct('ext',  5:20, 'color', [1 0 1]);
@@ -28,11 +31,8 @@ roi = p.Results.roi;
 
 % --- Stack dimensions
 
-Stack = flip(Stack,3);
+%Stack = flip(Stack,3);
 [Ny, Nx, Nt] = size(Stack);
-
-% --- piv dimensions
-
 
 % --- Shared variables
 
@@ -42,7 +42,7 @@ Img = NaN;
 
 figure(1)
 clf
-% hold on
+%hold on
 
 % Axis
 ax = axes('units', 'pixels', 'Position', [0 0 1 1]);
@@ -64,6 +64,13 @@ updateControlSize();
 
 addlistener(st, 'Value', 'PostSet', @updateImage);
 % addlistener(sz, 'Value', 'PostSet', @updateImage);
+
+% Set up the movie.
+fDir = '/Users/jean-francoisgilles/Documents/Data/2020/Pauline/';
+writerObj = VideoWriter([fDir output '.avi']); % Name it.
+writerObj.FrameRate = 5; % How many frames per second.
+open(writerObj);
+
 
 updateImage();
 
@@ -88,40 +95,71 @@ updateImage();
 
     function updateImage(varargin)
         
-        % --- Get sliders values
-        
-%         zi = round(get(sz, 'Value'));
-        ti = round(get(st, 'Value'));
-        
-        % --- Image
-        
-        Img = double(Stack(:,:, ti));
-        
-        % --- Display
-        
-        cla
-        
-        imshow(Img);
-        
-        colormap(flipud(hot));
-        
-        axis on xy tight
-        caxis([0 255])
-        colorbar
-        
-%         tl.String = ['z = ' num2str(zi) ' ; t = ' num2str(ti) ];
-        tl.String = ['t = ' num2str(ti) ];
-        
-        hold on;
-        
-        quiver(grid(:,1), grid(:,2), piv(:,1,ti), piv(:,2,ti));
-        plot(roi(:, 1, ti), roi(:, 2, ti), 'r.-', 'MarkerSize', 20);
-%         contour(roi(:, 1, ti), roi(:, 2, ti), ti);
-        
-        hold off;
-        
-        axis([1 size(Img,2) 1 size(Img,1)]);
+        for ti=1:Nt
+            % --- Get sliders values
+
+    %         zi = round(get(sz, 'Value'));
+            %ti = round(get(st, 'Value'));
+
+            % --- Image
+
+            Img = double(Stack(:,:, ti));
+
+            % --- Display
+
+            cla
+
+            imshow(Img);
+
+            colormap(flipud(hot));
+
+            %axis on xy tight
+            caxis([0 255])
+            colorbar
+
+    %         tl.String = ['z = ' num2str(zi) ' ; t = ' num2str(ti) ];
+            %tl.String = ['t' num2str(ti) ];
+
+            hold on;
+            
+            txtnumber = {'t' ti};
+            ylimits = ylim;
+            ymax = ylimits(2);
+            spacing = ymax/20; %for different lines
+            text(10, ymax-spacing*1, txtnumber); % *2 for line 2
+            
+            quiver(grid(:,2), grid(:,1), piv(:,2,ti), piv(:,1,ti));%s!! sens grille si pb affichage
+            
+%             x = roi(:, 1, ti);
+%             y = roi(:, 2, ti);
+%             x(end+1) = x(1);
+%             y(end+1) = y(1);
+%             plot(x, y, 'g.-', 'MarkerSize', 20);
+            drawpolygon('Position', roi(:, :, ti));
+            
+%             if ti==1
+%                 roi(:, :, ti)
+%             end
+            
+            hold off;
+
+            %axis([1 size(Img,2) 1 size(Img,1)]);
+
+            pause(0.1);
+            %updateImage();
+
+            frame = getframe(1); % 'gcf' can handle if you zoom in to take a movie.
+            writeVideo(writerObj, frame);
+            
+        end
         
     end
+
+% ===== Movie =============================================================
+
+
+%updateImage();
+
+    
 
 end
